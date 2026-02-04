@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydub
+scikit-learn
+numpy
+streamlit
+# Optional but recommended for production-quality STT
+whisper
+torch
+# For generating sample audio (demo)
+gTTS

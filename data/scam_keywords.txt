@@ -1,0 +1,35 @@
+# Example scam keywords and phrases (English + Hinglish)
+OTP
+account blocked
+account blocked
+blocked
+KYC
+verify
+verification
+urgent
+immediately
+abhi
+jaldi
+transfer
+transfer kar
+bank
+bank se bol rahe
+call from bank
+account hold
+account on hold
+suspicious transaction
+transaction declined
+card
+cvv
+otp
+code
+one time password
+police
+case
+arrest
+legal action
+threat
+pin
+ami
+pan
+"

@@ -33,38 +33,117 @@ Phone scams rely on psychological pressure, not consistent phone numbers. Detect
 
 ---
 
-## Fallback demo mode (feature, not a bug) ⚠️
+## Architecture (brief)
 
-- To guarantee a smooth hackathon demo, the backend will automatically use a pre-transcribed sample when audio processing/transcription fails or is unavailable.
-- Responses include `fallback_mode: true`, `fallback_reason`, and `fallback_note: "Fallback demo mode due to time constraints"` so judges can see the demo mode explicitly.
-- This design ensures the demo is rock-solid even without heavyweight audio libs installed.
-
----
-
-## What we'd add with more time 🚀
-
-- Real-time streaming alerts with sub-second detection
-- Enhanced on-device privacy-preserving models and larger multilingual datasets
-- Better UIs: judge-facing visualizations (timeline, highlighted risky phrases)
-- Post-call automated reporting & secure contact tracing features for support teams
+- **FastAPI backend** receives audio/requests
+- **stt.py**: Transcribes audio (Whisper if available, else simulated)
+- **intent_classifier.py**: Detects keywords + intent probability
+- **behavior_analyzer.py**: Extracts urgency, repetition, threats, speech speed
+- **risk_engine.py**: Aggregates signals into final risk score (0–100) + alert flag
 
 ---
 
-## Quick start
+## Demo Reliability & Fallback Mode ⚠️
 
-1. Install deps: `pip install -r requirements.txt`
-2. (Optional) Generate sample audio: `python data/generate_sample_audio.py`
-3. Run backend: `python -m uvicorn backend.app:app --reload`
-4. Open `http://127.0.0.1:8000/docs` for Swagger UI and demo endpoints
+For hackathon reliability, the backend **automatically enables fallback demo mode** when:
+
+- Audio processing unavailable (missing Whisper, ffmpeg, pydub)
+- Audio file missing or empty
+- STT transcription fails
+- No file provided to /analyze
+
+When fallback mode activates:
+
+1. System uses pre-transcribed scam call text from `data/fallback_transcript.txt`
+2. Full analysis pipeline runs on fallback text (keywords, intent, behavior, risk)
+3. API returns `fallback_mode: true`, `fallback_reason`, and `fallback_message`
+4. Server logs: "Fallback demo mode due to time constraints"
+
+This ensures:
+
+- ✅ **All endpoints always return HTTP 200** (never 502/500/timeout)
+- ✅ **Judges see realistic analysis** even without audio
+- ✅ **Core intelligence is preserved** (keyword + behavior + risk scoring works)
+- ✅ **Auto-recovery** if audio deps are installed later
 
 ---
 
-## Judgment-ready checklist ✅
+## Demo Tips for Judges
 
-- Clear, concise output: transcript + score + short reasoning
-- Deterministic demo behavior via fallback mode
-- Swagger docs expose the judge-friendly flow
+1. **Test the Swagger UI** (`/docs`) for interactive endpoint testing
+2. **Try /sample or /analyze_sample** for quick demo without uploading audio
+3. **Show transcript + matched keywords**: Scammers use predictable patterns (OTP, urgency, impersonation)
+4. **Highlight behavior analysis**: Urgency tone + fast speech + repetition = high risk
+5. **Emphasize Indian languages**: Hindi/Hinglish support for real-world Indian users
+6. **Explain fallback mode**: Why intent-based detection scales better than number-blocking
 
 ---
 
-If you'd like, I can prepare a short one-slide demo script for the judges and a Streamlit view that highlights `reasoning` + recommended actions.
+## Project Layout
+
+...
+.
+├── README.md                          ← You are here
+├── requirements.txt                   ← Dependencies
+├── backend/
+│   ├── app.py                        ← FastAPI main app (0.0.0.0:8000, CORS enabled)
+│   ├── stt.py                        ← Speech-to-text wrapper (Whisper + fallback)
+│   ├── intent_classifier.py          ← Keyword + ML intent detection
+│   ├── behavior_analyzer.py          ← Urgency/threat/repetition analysis
+│   ├── risk_engine.py                ← Risk scoring
+│   └── __init__.py
+├── data/
+│   ├── fallback_transcript.txt       ← Pre-transcribed scam example
+│   ├── scam_keywords.txt             ← Scam keyword list
+│   ├── sample_transcript.txt
+│   └── generate_sample_audio.py      ← (Optional) Generate sample audio
+├── demo/
+│   ├── streamlit_app.py              ← Simple UI for manual testing
+│   ├── test_analyze.py
+│   └── demo_script.md
+└── notebooks/
+    └── experiments.ipynb             ← Research & prototyping
+```
+
+---
+
+## Networking & Deployment for Codespaces
+
+✅ **FastAPI is configured to bind to 0.0.0.0:8000**
+
+- Accessible via Codespaces port forwarding (automatic public URL)
+- No localhost/127.0.0.1 references in code
+- CORS enabled for all origins (allow-\*) for hackathon safety
+- All endpoints return HTTP 200 with valid JSON
+
+✅ **No external dependencies for core API**
+
+- Optional: Whisper (audio transcription)
+- Optional: pydub (audio duration detection)
+- Core analysis works without these (falls back to demo mode)
+
+---
+
+## Future Scope
+
+- On-device/edge model for privacy
+- Real-time streaming with sub-second alerts
+- Additional languages & more robust ML
+- Persistent logging for audit trails
+- Multi-user session management
+
+---
+
+## Testing
+
+Run TestClient validation (automated on startup):
+
+```bash
+python -c "from backend.app import app; from fastapi.testclient import TestClient; client = TestClient(app); print(client.get('/health').json())"
+```
+
+---
+
+## License & Attribution
+
+Built for hackathon. Uses Whisper (OpenAI), scikit-learn, and FastAPI.

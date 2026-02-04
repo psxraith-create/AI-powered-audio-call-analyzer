@@ -1,0 +1,5 @@
+1. Open Swagger UI: /docs
+2. Run GET /health → should return 200 OK
+3. Run GET /sample → observe fallback transcript, risk_score, flags
+4. Run POST /analyze → input text or leave empty → see 200 OK and reasoning
+5. Explain fallback mode and output reasoning
